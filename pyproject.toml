@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "nightcity"
+version = "0.0.0"
+description = "A collection of scripts and tools for DevOps tasks"
+authors = ["Chris Pressland <mail@cpressland.io>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+nightcity = "nightcity:cli"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+typer = { extras = ["all"], version = "^0.9.0" }
+pydantic-settings = "^2.1.0"
+requests = "^2.31.0"
+loguru = "^0.7.2"
+kr8s = "^0.12.15"
+psycopg = "^3.1.17"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.13"
+
+
+[tool.ruff]
+select = ["ALL"]
+ignore = [
+    "ANN101",
+    "COM812",
+    "D203",
+    "D213",
+    "D407",
+    "FA102",
+    "G004",
+    "PLR0913",
+    "S608",
+]
+line-length = 120
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
