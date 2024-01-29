@@ -19,7 +19,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 class ScreamsheetConfig(BaseSettings):
     """Config for Screamsheet."""
 
-    secrets_path: str = "/Users/thenujaviknarajah/code/nightcity/secrets"
+    secrets_path: str = "/mnt/secrets"
     postgres_dsn: PostgresDsn = None
 
     blob_storage_connection_string: str = ""
