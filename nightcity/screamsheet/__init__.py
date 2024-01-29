@@ -7,29 +7,18 @@ from pathlib import Path
 
 import requests
 from azure.storage.blob import BlobClient
-from models import AccountHolder, AccountHolderMarketingPreference, AccountHolderProfile, RetailerConfig, engine
-from pydantic import PostgresDsn
-from pydantic_settings import BaseSettings
+from models import (
+    AccountHolder,
+    AccountHolderMarketingPreference,
+    AccountHolderProfile,
+    RetailerConfig,
+    engine,
+    settings,
+)
 from requests.auth import HTTPBasicAuth
 from sqlalchemy import select
 from sqlalchemy.sql import func
 from tenacity import retry, stop_after_attempt, wait_fixed
-
-
-class ScreamsheetConfig(BaseSettings):
-    """Config for Screamsheet."""
-
-    secrets_path: str = "/mnt/secrets"
-    postgres_dsn: PostgresDsn = None
-
-    blob_storage_connection_string: str = ""
-    blob_container: str = "viator"
-
-    mailgun_from: str = "noreply@bink.com"
-    mailgun_to: str = "onlineservices@bink.com"
-
-
-settings = ScreamsheetConfig()
 
 
 def read_secrets(key: str) -> str:
@@ -113,7 +102,6 @@ def upload_file_to_blob() -> None:
         container_name=settings.blob_container,
         blob_name=fname,
     )
-
     blob.upload_blob(f.read())
 
 
@@ -129,8 +117,8 @@ def mailgun() -> None:
     Bink Team
     """
 
-    mailgun_api_key: str = read_secrets["MAILGUN_API_KEY"]
-    mailgun_url: str = f"{read_secrets['MAILGUN_API']}/{read_secrets['MAILGUN_DOMAIN']}/messages"
+    mailgun_api_key: str = read_secrets("mailgun")["MAILGUN_API_KEY"]
+    mailgun_url: str = f'{read_secrets("mailgun")["MAILGUN_API"]}/{read_secrets("mailgun")["MAILGUN_DOMAIN"]}/messages'
 
     try:
         requests.post(
@@ -146,3 +134,9 @@ def mailgun() -> None:
         )
     except Exception:
         logging.exception("Mailgun Request Failed")
+
+
+def run() -> None:
+    """Run the script."""
+    upload_file_to_blob()
+    mailgun()
