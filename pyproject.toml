@@ -16,6 +16,11 @@ requests = "^2.31.0"
 loguru = "^0.7.2"
 kr8s = "^0.12.15"
 psycopg = "^3.1.17"
+pydantic = "^2.5.3"
+sqlalchemy = "^2.0.25"
+sqlalchemy-orm = "^1.2.10"
+azure-storage-blob = "^12.19.0"
+tenacity = "^8.2.3"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.13"
@@ -33,6 +38,9 @@ ignore = [
     "G004",
     "PLR0913",
     "S608",
+    "D104",
+    "RUF100",
+    "D100"
 ]
 line-length = 120
 
