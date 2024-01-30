@@ -3,7 +3,7 @@ import typer
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Annotated
 
-from nightcity import delamain
+from nightcity import delamain, screamsheet
 
 
 class Config(BaseSettings):
@@ -23,6 +23,12 @@ def cli_delamain(lookups: Annotated[str, typer.Option(help="A comma seperated li
     Example: delamain --lookups=uksouth-dev-n71o.postgres.database.azure.com,uksouth-dev-05da.redis.cache.windows.net
     """
     delamain.run(lookups=lookups)
+
+
+@cli.command(name="screamsheet")
+def cli_screamsheet() -> None:
+    """Screamsheet sends marketing preferences to Viator."""
+    screamsheet.run()
 
 
 if __name__ == "__main__":

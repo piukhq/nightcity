@@ -7,7 +7,12 @@ from pathlib import Path
 
 import requests
 from azure.storage.blob import BlobClient
-from models import (
+from requests.auth import HTTPBasicAuth
+from sqlalchemy import select
+from sqlalchemy.sql import func
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+from nightcity.screamsheet.models import (
     AccountHolder,
     AccountHolderMarketingPreference,
     AccountHolderProfile,
@@ -15,10 +20,6 @@ from models import (
     engine,
     settings,
 )
-from requests.auth import HTTPBasicAuth
-from sqlalchemy import select
-from sqlalchemy.sql import func
-from tenacity import retry, stop_after_attempt, wait_fixed
 
 
 def read_secrets(key: str) -> str:
@@ -137,6 +138,6 @@ def mailgun() -> None:
 
 
 def run() -> None:
-    """Run the script."""
+    """Upload to Viator Azure Sftp and send an email to the Viator team."""
     upload_file_to_blob()
     mailgun()
