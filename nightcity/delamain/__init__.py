@@ -78,18 +78,20 @@ def run() -> None:
 
     nextdns_rewrites = nextdns.get_rewrites()
 
-    for name, record in config.dns_rewrites.cname:
+    for cname in config.dns_rewrites.cname:
+        rewrite = None
         with contextlib.suppress(StopIteration):
-            rewrite = next(rewrite for rewrite in nextdns_rewrites if rewrite["name"] == name)
-        if rewrite and rewrite["content"] != record:
-            log.info(f"Updating '{name}' from '{rewrite['content']}' to '{record}'")
+            rewrite = next(rewrite for rewrite in nextdns_rewrites if rewrite["name"] == cname.name)
+        if rewrite and rewrite["content"] != cname.record:
+            log.info(f"Updating '{cname.name}' from '{rewrite['content']}' to '{cname.record}'")
             nextdns.delete_rewrite(rewrite["id"])
-            nextdns.add_rewrite(name, record)
+            nextdns.add_rewrite(cname.name, cname.record)
         if not rewrite:
-            log.info(f"Setting '{name}' to '{record}'")
-            nextdns.add_rewrite(name, record)
+            log.info(f"Setting '{cname.name}' to '{cname.record}'")
+            nextdns.add_rewrite(cname.name, cname.record)
 
     for record in config.dns_rewrites.a:
+        rewrite = None
         ip_address = _get_ip_address(record)
         if not ip_address:
             log.warning(f"Couldn't resolve '{record}'")
