@@ -1,26 +1,54 @@
 """Main module for Delamain."""
 
+import contextlib
 import socket
-import sys
+from pathlib import Path
 
 import requests
-from loguru import logger
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import yaml
+from box import Box
+
+from nightcity.settings import log, settings
 
 
-class DelamainConfig(BaseSettings):
-    """Config for Delamain."""
+class NextDNS:
+    """Manages NextDNS."""
 
-    nextdns_api_key: str
-    nextdns_profile_id: str = "dee4c7"
-    log_level: str = "INFO"
-    model_config = SettingsConfigDict(env_prefix="DELAMAIN_")
+    def __init__(self) -> None:
+        """Initialise NextDNS."""
+        self.api_key = settings.nextdns_api_key
+        self.profile_id = settings.nextdns_id
 
+    def get_rewrites(self) -> list[dict]:
+        """Get Rewrites from NextDNS."""
+        r = requests.get(
+            f"https://api.nextdns.io/profiles/{self.profile_id}/rewrites/",
+            headers={"X-Api-Key": self.api_key},
+            timeout=5,
+        )
+        log.debug(r.text)
+        return r.json()["data"]
 
-config = DelamainConfig()
+    def delete_rewrite(self, next_dns_id: str) -> None:
+        """Delete a rewrite from NextDNS."""
+        r = requests.delete(
+            f"https://api.nextdns.io/profiles/{self.profile_id}/rewrites/{next_dns_id}",
+            headers={"X-Api-Key": self.api_key},
+            timeout=5,
+        )
+        r.raise_for_status()
+        log.debug(r.text)
 
-logger.remove()
-logger.add(sys.stdout, level=config.log_level)
+    def add_rewrite(self, name: str, content: str) -> None:
+        """Add a rewrite to NextDNS."""
+        r = requests.post(
+            f"https://api.nextdns.io/profiles/{self.profile_id}/rewrites/",
+            headers={"X-Api-Key": self.api_key},
+            json={"name": name, "content": content},
+            timeout=5,
+        )
+        r.raise_for_status()
+        log.debug(r.text)
 
 
 def _get_ip_address(host: str) -> str | None:
@@ -30,48 +58,43 @@ def _get_ip_address(host: str) -> str | None:
         return None
 
 
-def _nextdns_get_records() -> list[dict]:
-    r = requests.get(
-        f"https://api.nextdns.io/profiles/{config.nextdns_profile_id}/rewrites/",
-        headers={"X-Api-Key": config.nextdns_api_key},
-        timeout=5,
-    )
-    logger.debug(r.text)
-    return r.json()["data"]
+def load_config() -> Box:
+    """Load the configuration file."""
+    config_file = Path("/var/config/delamain.yaml")
+    if config_file.exists():
+        return Box(yaml.safe_load(config_file.read_text()))
+    return Box(yaml.safe_load(Path("delamain.yaml").read_text()))
 
 
-def _nextdns_delete_record(next_dns_id: str) -> None:
-    r = requests.delete(
-        f"https://api.nextdns.io/profiles/{config.nextdns_profile_id}/rewrites/{next_dns_id}",
-        headers={"X-Api-Key": config.nextdns_api_key},
-        timeout=5,
-    ).raise_for_status()
-    logger.debug(r.text)
-
-
-def _nextdns_add_record(host: str, ip: str) -> None:
-    r = requests.post(
-        f"https://api.nextdns.io/profiles/{config.nextdns_profile_id}/rewrites/",
-        headers={"X-Api-Key": config.nextdns_api_key},
-        json={"name": host, "content": ip},
-        timeout=5,
-    )
-    logger.debug(r.text)
-
-
-def run(lookups: str) -> None:
+def run() -> None:
     """Entrypoint for Delamain."""
-    nextdns_records = _nextdns_get_records()
-    for lookup in lookups.split(","):
-        ip_address = _get_ip_address(lookup)
-        if ip_address:
-            logger.info(f"Found IP address {ip_address} for {lookup}")
-            record = next((item for item in nextdns_records if item["name"] == lookup), None)
-            if record:
-                if ip_address != record["content"]:
-                    logger.info(f"Updating {lookup} from {record['content']} to {ip_address}")
-                    _nextdns_delete_record(record["id"])
-                    _nextdns_add_record(lookup, ip_address)
-            else:
-                logger.info(f"Adding {lookup} with IP address {ip_address}")
-                _nextdns_add_record(lookup, ip_address)
+    nextdns = NextDNS()
+    config = load_config()
+
+    nextdns_rewrites = nextdns.get_rewrites()
+
+    for name, record in config.dns_rewrites.cname:
+        with contextlib.suppress(StopIteration):
+            rewrite = next(rewrite for rewrite in nextdns_rewrites if rewrite["name"] == name)
+        if rewrite and rewrite["content"] != record:
+            log.info(f"Updating '{name}' from '{rewrite['content']}' to '{record}'")
+            nextdns.delete_rewrite(rewrite["id"])
+            nextdns.add_rewrite(name, record)
+        if not rewrite:
+            log.info(f"Setting '{name}' to '{record}'")
+            nextdns.add_rewrite(name, record)
+
+    for record in config.dns_rewrites.a:
+        ip_address = _get_ip_address(record)
+        if not ip_address:
+            log.warning(f"Couldn't resolve '{record}'")
+            continue
+        with contextlib.suppress(StopIteration):
+            rewrite = next(rewrite for rewrite in nextdns_rewrites if rewrite["name"] == record)
+        if rewrite and rewrite["content"] != ip_address:
+            log.info(f"Updating '{record}' from '{rewrite['content']}' to '{ip_address}'")
+            nextdns.delete_rewrite(rewrite["id"])
+            nextdns.add_rewrite(record, ip_address)
+        if not rewrite:
+            log.info(f"Setting '{record}' to '{ip_address}'")
+            nextdns.add_rewrite(record, ip_address)

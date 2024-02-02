@@ -1,9 +1,17 @@
-# Deamain
+# Delamain
 
-## Environment Variables
+## Config File
 
-| Name | Description | Default |
-| ---- | ----------- | ------- |
-| `DELAMAIN_NEXTDNS_API_KEY` | The NextDNS API Key | None |
-| `DELAMAIN_NEXTDNS_PROFILE_ID` | The NextDNS Profile ID | `dee4c7` |
-| `DELAMAIN_LOG_LEVEL` | The Log Level for the Application | `INFO` |
+The delamain config file should be placed in the project root, locally, or in `/var/config/delamain.yaml` within Kubernetes.
+
+Example File:
+```yaml
+dns_rewites:
+  a:
+    - uksouth-staging-2o6h.postgres.database.azure.com
+    - uksouth-staging-q263.redis.cache.windows.net
+  cname:
+    - name: staging.uksouth.bink.sh
+      record: uksouth-staging-traefik.alpine-monster.ts.net
+
+```
