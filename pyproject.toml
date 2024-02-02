@@ -24,6 +24,7 @@ tenacity = "^8.2.3"
 azure-identity = "^1.15.0"
 pyyaml = "^6.0.1"
 python-box = "^7.1.1"
+azure-keyvault = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.13"

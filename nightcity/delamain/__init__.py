@@ -1,6 +1,7 @@
 """Main module for Delamain."""
 
 import contextlib
+import json
 import socket
 from pathlib import Path
 
@@ -8,7 +9,7 @@ import requests
 import yaml
 from box import Box
 
-from nightcity.settings import log, settings
+from nightcity.settings import keyvault_client, log
 
 
 class NextDNS:
@@ -16,16 +17,20 @@ class NextDNS:
 
     def __init__(self) -> None:
         """Initialise NextDNS."""
-        self.api_key = settings.nextdns_api_key
-        self.profile_id = settings.nextdns_id
+        self.nextdns: dict = json.loads(keyvault_client.get_secret("nextdns").value)
+        self.profile_id: str = self.nextdns["profile_id"]
+        self.api_key: str = self.nextdns["api_key"]
+        self.headers: dict = {"X-Api-Key": self.api_key}
+        self.timeout: int = 5
 
     def get_rewrites(self) -> list[dict]:
         """Get Rewrites from NextDNS."""
         r = requests.get(
             f"https://api.nextdns.io/profiles/{self.profile_id}/rewrites/",
-            headers={"X-Api-Key": self.api_key},
-            timeout=5,
+            headers=self.headers,
+            timeout=self.timeout,
         )
+        r.raise_for_status()
         log.debug(r.text)
         return r.json()["data"]
 
@@ -33,8 +38,8 @@ class NextDNS:
         """Delete a rewrite from NextDNS."""
         r = requests.delete(
             f"https://api.nextdns.io/profiles/{self.profile_id}/rewrites/{next_dns_id}",
-            headers={"X-Api-Key": self.api_key},
-            timeout=5,
+            headers=self.headers,
+            timeout=self.timeout,
         )
         r.raise_for_status()
         log.debug(r.text)
@@ -43,9 +48,9 @@ class NextDNS:
         """Add a rewrite to NextDNS."""
         r = requests.post(
             f"https://api.nextdns.io/profiles/{self.profile_id}/rewrites/",
-            headers={"X-Api-Key": self.api_key},
             json={"name": name, "content": content},
-            timeout=5,
+            headers=self.headers,
+            timeout=self.timeout,
         )
         r.raise_for_status()
         log.debug(r.text)
