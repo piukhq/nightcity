@@ -44,6 +44,11 @@ class PGUserManager:
             readers = [user for user in all_users if user not in admins]
             admins.pop(admins.index("nightcity"))
 
+            duplicates = [user for user in admins if user in readers]
+            for duplicate in duplicates:
+                log.warning(f"User: {duplicate} found in both admins and readers. Removing from admins.")
+                admins.pop(admins.index(duplicate))
+
             log.info(f"Found admins: {admins}")
             log.info(f"Found readers: {readers}")
             return {"admins": admins, "readers": readers}
@@ -80,14 +85,14 @@ def run() -> None:
     admins_to_remove = [user for user in pg_users["admins"] if user not in entra_admins]
     readers_to_remove = [user for user in pg_users["readers"] if user not in entra_readers]
 
-    for user in admins_to_add:
-        pg.add_user(user, is_admin=True)
-
-    for user in readers_to_add:
-        pg.add_user(user, is_admin=False)
-
     for user in admins_to_remove:
         pg.remove_user(user)
 
     for user in readers_to_remove:
         pg.remove_user(user)
+
+    for user in admins_to_add:
+        pg.add_user(user, is_admin=True)
+
+    for user in readers_to_add:
+        pg.add_user(user, is_admin=False)
