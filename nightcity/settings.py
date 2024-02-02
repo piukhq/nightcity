@@ -21,4 +21,4 @@ log.remove()
 log.add(sys.stdout, level=settings.log_level)
 
 identity = DefaultAzureCredential()
-keyvault_client = SecretClient(vault_url=settings.keyvault_url, credential=identity)
+keyvault_client = SecretClient(vault_url=str(settings.keyvault_url), credential=identity)
