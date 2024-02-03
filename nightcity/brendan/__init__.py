@@ -43,14 +43,6 @@ class PGUserManager:
             admins = [user[0] for user in cur.fetchall()]
             readers = [user for user in all_users if user not in admins]
             admins.pop(admins.index("nightcity"))
-
-            duplicates = [user for user in admins if user in readers]
-            for duplicate in duplicates:
-                log.warning(f"User: {duplicate} found in both admins and readers. Removing from admins.")
-                admins.pop(admins.index(duplicate))
-
-            log.info(f"Found admins: {admins}")
-            log.info(f"Found readers: {readers}")
             return {"admins": admins, "readers": readers}
 
     def remove_user(self, user: str) -> None:
@@ -79,6 +71,11 @@ def run() -> None:
     entra_readers = graph.get_group_members_by_email(settings.entra_postgres_readers_group_id)
 
     pg_users = pg.get_current_users()
+
+    duplicates = [user for user in entra_admins if user in entra_readers]
+    for duplicate in duplicates:
+        log.warning(f"User: {duplicate} found in both admins and readers. Removing from admins.")
+        entra_admins.pop(entra_admins.index(duplicate))
 
     admins_to_add = [user for user in entra_admins if user not in pg_users["admins"]]
     readers_to_add = [user for user in entra_readers if user not in pg_users["readers"]]
