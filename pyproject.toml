@@ -15,7 +15,7 @@ pydantic-settings = "^2.1.0"
 requests = "^2.31.0"
 loguru = "^0.7.2"
 kr8s = "^0.13.0"
-pydantic = {extras = ["email"], version = "^2.6.0"}
+pydantic = { extras = ["email"], version = "^2.6.0" }
 sqlalchemy = "^2.0.25"
 sqlalchemy-orm = "^1.2.10"
 azure-storage-blob = "^12.19.0"

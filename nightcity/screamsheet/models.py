@@ -1,13 +1,16 @@
 from sqlalchemy import Table
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import DeclarativeMeta, declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.sql.schema import MetaData
 
 from nightcity.postgres import sqla_connection
 
 engine: Engine = sqla_connection(database_name="polaris")
 metadata: MetaData = MetaData()
-Base: DeclarativeMeta = declarative_base(metadata=metadata)
+
+
+class Base(DeclarativeBase):
+    """Base model for SQLAlchemy."""
 
 
 class AccountHolder(Base):

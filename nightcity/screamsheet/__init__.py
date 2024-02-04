@@ -41,7 +41,7 @@ app_settings = ScreamsheetConfig()
 def get_marketing_data() -> list[Row]:
     """Get marketing preferences from the Polaris database."""
     conn = engine.connect()
-    return conn.execute(
+    data = conn.execute(
         select(
             AccountHolder.email,
             AccountHolderProfile.first_name,
@@ -66,6 +66,8 @@ def get_marketing_data() -> list[Row]:
         .where(AccountHolder.email.notlike("%test%"))
         .where(RetailerConfig.slug == "viator"),
     ).fetchall()
+    log.debug(data)
+    return data
 
 
 def prepare_csv(data: list[Row]) -> StringIO:
@@ -115,7 +117,7 @@ def send_email_via_mailgun() -> None:
     Bink Team
     """
 
-    mailgun_secret = Box(json.loads(keyvault_client.get_secret("mailgun").value))
+    mailgun_secret: Box = Box(json.loads(keyvault_client.get_secret("mailgun").value))
 
     if mailgun_secret.MAILGUN_API_KEY == "fake-api-key":
         log.error("Mailgun API Key is not set")
