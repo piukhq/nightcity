@@ -57,6 +57,8 @@ class PGUserManager:
         with self.connection as conn, conn.cursor() as cur:
             if is_admin:
                 cur.execute(f"SELECT * FROM pgaadauth_create_principal('{user}', true, true);")
+                cur.execute(f'GRANT pg_read_all_data TO "{user}";')
+                cur.execute(f'GRANT pg_write_all_data TO "{user}";')
             else:
                 cur.execute(f"SELECT * FROM pgaadauth_create_principal('{user}', false, true);")
                 cur.execute(f'GRANT pg_read_all_data TO "{user}";')
