@@ -26,6 +26,7 @@ python-box = "^7.1.1"
 azure-keyvault = "^4.2.0"
 msgraph-sdk = "^1.1.0"
 psycopg2-binary = "^2.9.9"
+sentry-sdk = "^1.40.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.13"

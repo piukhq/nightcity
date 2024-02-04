@@ -1,26 +1,10 @@
-from pydantic import PostgresDsn
-from pydantic_settings import BaseSettings
-from sqlalchemy import Table, create_engine
+from sqlalchemy import Table
 from sqlalchemy.orm import DeclarativeMeta, declarative_base
 from sqlalchemy.sql.schema import MetaData
 
+from nightcity.postgres import sqla_connection
 
-class ScreamsheetConfig(BaseSettings):
-    """Config for Screamsheet."""
-
-    secrets_path: str = "/mnt/secrets"
-    postgres_dsn: PostgresDsn = "postgresql://postgres:postgres@postgres:5432/polaris"
-
-    blob_storage_connection_string: str = ""
-    blob_container: str = "viator"
-
-    mailgun_from: str = "noreply@bink.com"
-    mailgun_to: str = "onlineservices@bink.com"
-
-
-settings = ScreamsheetConfig()
-
-engine = create_engine(str(settings.postgres_dsn))
+engine = sqla_connection(database_name="polaris")
 metadata = MetaData()
 Base: DeclarativeMeta = declarative_base(metadata=metadata)
 
