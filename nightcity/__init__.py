@@ -3,6 +3,7 @@ import typer
 
 from nightcity.brendan import run as brendan
 from nightcity.delamain import run as delamain
+from nightcity.screamsheet import run as screamsheet
 
 cli = typer.Typer()
 
@@ -17,6 +18,12 @@ def cli_brendan() -> None:
 def cli_delamain() -> None:
     """Configure NextDNS Rewrites based on DNS Lookups from within Kubernetes."""
     delamain()
+
+
+@cli.command(name="screamsheet")
+def cli_screamsheet() -> None:
+    """Send Viator Marketing Preference emails."""
+    screamsheet()
 
 
 if __name__ == "__main__":

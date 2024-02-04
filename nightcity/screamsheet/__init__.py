@@ -13,15 +13,17 @@ from sqlalchemy.engine.row import Row
 from sqlalchemy.sql import func
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from nightcity.screamsheet.models import (
-    AccountHolder,
-    AccountHolderMarketingPreference,
-    AccountHolderProfile,
-    RetailerConfig,
-    engine,
-)
-from nightcity.settings import keyvault_client, log
+from nightcity.settings import keyvault_client, log, settings
 from nightcity.storage import sftp_client
+
+if settings.postgres_host:
+    from nightcity.screamsheet.models import (
+        AccountHolder,
+        AccountHolderMarketingPreference,
+        AccountHolderProfile,
+        RetailerConfig,
+        engine,
+    )
 
 
 class ScreamsheetConfig(BaseSettings):
