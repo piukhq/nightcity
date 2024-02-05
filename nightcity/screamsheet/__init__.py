@@ -16,7 +16,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from nightcity.settings import keyvault_client, log, settings
 from nightcity.storage import sftp_client
 
-if settings.postgres_host:
+if settings.postgres_host and settings.environment in ("prod", "staging"):
     from nightcity.screamsheet.models import (
         AccountHolder,
         AccountHolderMarketingPreference,
