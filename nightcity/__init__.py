@@ -1,6 +1,5 @@
 """Main module for Night City."""
 import typer
-from typing_extensions import Annotated
 
 from nightcity.brendan import run as brendan
 from nightcity.delamain import run as delamain
@@ -26,6 +25,7 @@ def cli_delamain() -> None:
 def cli_screamsheet() -> None:
     """Send Viator Marketing Preference emails."""
     screamsheet()
+
 
 if __name__ == "__main__":
     cli()
