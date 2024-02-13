@@ -25,6 +25,9 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
 
+    bamboohr_api_key: str | None = None
+    freshservice_api_key: str | None = None
+
 
 settings = Settings()
 
