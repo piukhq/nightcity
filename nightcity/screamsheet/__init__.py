@@ -66,6 +66,7 @@ def get_marketing_data() -> list[Row]:
         .where(AccountHolder.email.notlike("%test%"))
         .where(RetailerConfig.slug == "viator"),
     ).fetchall()
+    log.info(f"Retrieved {len(data)} rows from the database")
     log.debug(data)
     return data
 
@@ -102,6 +103,7 @@ def upload_blob(file: StringIO, filename: str) -> None:
         container="viator",
         blob=filename,
     )
+    log.info(f"Uploading {filename} to Azure Storage")
     blob.upload_blob(file.read())
 
 
@@ -123,6 +125,7 @@ def send_email_via_mailgun() -> None:
         log.error("Mailgun API Key is not set")
         return
 
+    log.info("Sending email via Mailgun")
     try:
         r = requests.post(
             f"{mailgun_secret.MAILGUN_API}/{mailgun_secret.MAILGUN_DOMAIN}/messages",
@@ -136,6 +139,7 @@ def send_email_via_mailgun() -> None:
             timeout=10,
         )
         r.raise_for_status()
+        log.info("Mailgun Request Successful")
     except requests.RequestException:
         log.exception("Mailgun Request Failed")
 
