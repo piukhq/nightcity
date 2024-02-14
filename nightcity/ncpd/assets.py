@@ -1,16 +1,20 @@
-import requests
-from nightcity.settings import settings
-from base64 import b64encode
 import json
 
-class freshservice:
+import requests
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+from nightcity.settings import log, settings
+
+
+class FreshService:  # noqa: N801
     """Freshservice class."""
+
     def __init__(self) -> None:
+        """Initialize Freshservice class."""
         self.api_key = settings.freshservice_api_key
-        # self.auth = f"{settings.freshservice_api_key} : 'x'"
         self.baseurl = "https://bink.freshservice.com/api/v2"
 
-    def get_all_freshservice_requestors(self):
+    def get_all_freshservice_requestors(self) -> dict[str, int]:
         """Get Freshservice requestors."""
         ids = {}
         page_number = 1
@@ -26,63 +30,66 @@ class freshservice:
                 )
                 response.raise_for_status()
                 data = json.loads(response.text)
-                if response.status_code == 200 and data['requesters'] != []:
+                if data["requesters"] != []:
                     try:
-                        for requester in data['requesters']:
-                            ids.update({requester['primary_email']: requester['id']})
-                            print(f"email {requester['primary_email']} with id {requester['id']} has been added to the list.")
+                        for requester in data["requesters"]:
+                            if requester["primary_email"] != "null":
+                                ids.update({requester["id"]: requester["id"]})
+                            else:
+                                ids.update({requester["primary_email"]: requester["id"]})
                         page_number += 1
-                        print(f"Moving onto page {page_number}")
+                        log.info(f"Moving onto page {page_number}")
                     except json.JSONDecodeError:
-                        print("Failed to decode JSON response.")
+                        log("Failed to decode JSON response.")
                 else:
                     break
             except requests.exceptions.RequestException as error:
-                print("Error:", error)
-        return(ids)
+                log.error("Error:", error)
+        return ids
 
-    def get_single_requester(self, email: str|None = None):
+    def get_single_requester(self, email: str) -> dict[str, str] | None:
         """Get a single Freshservice requester."""
-        user_name = email.split('@')[0]
-        query= f'"primary_email:%27{user_name}%40bink.com%27"&include_agents=true',
+        user_name = email.split("@")[0]
+        query = f'"primary_email:%27{user_name}%40bink.com%27"&include_agents=true'
         response = requests.get(
-            url=f'{self.baseurl}/requesters?query={query[0]}',
+            url=f"{self.baseurl}/requesters?query={query}",
             auth=(self.api_key, "X"),
         )
+        response.raise_for_status()
         try:
             data = json.loads(response.text)
-            if response.status_code == 200 and data['requesters'] != []:
-                return(data)
+            if data["requesters"] != []:
+                return data
             else:
-                print(f"Failed to get user {email}. With status code: {response.status_code} for reason: {response.text}")
+                log(f"Failed to get user {email}.")
         except requests.exceptions.RequestException as error:
-            print("Error:", error)
+            log.error("Error:", error)
 
-    def forget_users(self, ids: dict|None = None, user_email: str|None = None, all: bool = False):
+    def forget_users(self, ids: dict | None = None, user_email: str | None = None, all: bool = False) -> None:
         """Forget Freshservice users."""
         if all:
-            list_data=self.get_all_freshservice_requestors()
+            list_data = self.get_all_freshservice_requestors()
             data = list(list_data.values())
-            print(data)
         elif user_email:
             data = {user_email: self.get_single_requester()}
-            print(data)
         else:
-            data=ids
-            print(data)
+            data = ids
 
-        while True:
+        print(data)
+        for id in data:
             try:
-                if data == []:
-                    break
                 forget = requests.delete(
-                    url=f"{self.baseurl}/requesters/{data[0]}/forget",
+                    url=f"{self.baseurl}/requesters/{id}/forget",
                     auth=(self.api_key, "X"),
                 )
-                if forget.status_code == 200:
-                    print(f"User {data[0]} has been forgotten.")
-                    data.pop(0)
-                else:
-                    print(f"Failed to forget user {data[0]}. With status code: {requests.status_codes}")
+                log.info(forget.status_code)
+                log.info(f"Forgetting user {id}.")
             except requests.exceptions.RequestException as error:
-                print("Error:", error)
+                log.error("Error:", error)
+
+    def create_user(self, email: str, name: str) -> None:
+        pass
+
+    def run(self) -> None:
+        """Run Freshservice."""
+        self.forget_users(all=False)

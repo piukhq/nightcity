@@ -1,10 +1,11 @@
 """Main module for Night City."""
 import typer
+from typing_extensions import Annotated
 
 from nightcity.brendan import run as brendan
 from nightcity.delamain import run as delamain
+from nightcity.ncpd import run as ncpd
 from nightcity.screamsheet import run as screamsheet
-from nightcity.ncpd import assets
 
 cli = typer.Typer()
 
@@ -25,6 +26,12 @@ def cli_delamain() -> None:
 def cli_screamsheet() -> None:
     """Send Viator Marketing Preference emails."""
     screamsheet()
+
+
+@cli.command(name="ncpd")
+def cli_ncpd(all: Annotated[bool, typer.Argument()]) -> None:
+    """Run NightCity Police Department."""
+    ncpd()
 
 
 if __name__ == "__main__":
