@@ -76,16 +76,17 @@ class FreshService:  # noqa: N801
             data = ids
 
         print(data)
+
+    try:
         for id in data:
-            try:
-                forget = requests.delete(
-                    url=f"{self.baseurl}/requesters/{id}/forget",
-                    auth=(self.api_key, "X"),
-                )
-                log.info(forget.status_code)
-                log.info(f"Forgetting user {id}.")
-            except requests.exceptions.RequestException as error:
-                log.error("Error:", error)
+            forget = requests.delete(
+                url=f"{self.baseurl}/requesters/{id}/forget",
+                auth=(self.api_key, "X"),
+            )
+            log.info(forget.status_code)
+            log.info(f"Forgetting user {id}.")
+    except requests.exceptions.RequestException as error:
+        log.error("Error:", error)
 
     def create_user(self, email: str, name: str) -> None:
         pass
