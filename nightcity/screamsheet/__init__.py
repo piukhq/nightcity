@@ -8,22 +8,12 @@ from box import Box
 from pydantic import EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from requests.auth import HTTPBasicAuth
-from sqlalchemy import select
 from sqlalchemy.engine.row import Row
-from sqlalchemy.sql import func
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from nightcity.settings import keyvault_client, log, settings
+from nightcity.screamsheet.query import get_marketing_data, get_transaction_data
+from nightcity.settings import keyvault_client, log
 from nightcity.storage import sftp_client
-
-if settings.postgres_host and settings.environment in ("prod", "staging"):
-    from nightcity.screamsheet.models import (
-        AccountHolder,
-        AccountHolderMarketingPreference,
-        AccountHolderProfile,
-        RetailerConfig,
-        engine,
-    )
 
 
 class ScreamsheetConfig(BaseSettings):
@@ -38,63 +28,19 @@ class ScreamsheetConfig(BaseSettings):
 app_settings = ScreamsheetConfig()
 
 
-def get_marketing_data() -> list[Row]:
-    """Get marketing preferences from the Polaris database."""
-    conn = engine.connect()
-    data = conn.execute(
-        select(
-            AccountHolder.email,
-            AccountHolderProfile.first_name,
-            AccountHolderProfile.last_name,
-            AccountHolderProfile.date_of_birth,
-            AccountHolderMarketingPreference.key_name,
-            AccountHolderMarketingPreference.value,
-            AccountHolder.account_number,
-            func.date(AccountHolderMarketingPreference.updated_at),
-        )
-        .join(RetailerConfig, RetailerConfig.id == AccountHolder.retailer_id)
-        .join(
-            AccountHolderMarketingPreference,
-            AccountHolderMarketingPreference.account_holder_id == AccountHolder.id,
-        )
-        .join(
-            AccountHolderProfile,
-            AccountHolderProfile.account_holder_id == AccountHolder.id,
-        )
-        .where(AccountHolder.email.notlike(r"%\@\%"))
-        .where(AccountHolder.email.notlike("%bink.com"))
-        .where(AccountHolder.email.notlike("%test%"))
-        .where(RetailerConfig.slug == "viator"),
-    ).fetchall()
-    log.info(f"Retrieved {len(data)} rows from the database")
-    log.debug(data)
-    return data
-
-
-def prepare_csv(data: list[Row]) -> StringIO:
+def prepare_csv(data: list[Row], headers: list[str]) -> StringIO:
     """Write Marketing Preferences to a CSV StringIO Object."""
     f = StringIO()
     file_writer = csv.writer(f)
-    file_writer.writerow(
-        [
-            "Email",
-            "First Name",
-            "Last Name",
-            "Date of Birth",
-            "Key Name",
-            "Value",
-            "Account Number",
-            "Updated At",
-        ],
-    )
+    file_writer.writerow(headers)
     file_writer.writerows(data)
     return f
 
 
-def generate_filename() -> str:
+def generate_filename(data_type: str, folder: str) -> str:
     """Generate a Filename for Azure Storage."""
     date = pendulum.now(tz="utc").strftime("%Y-%m-%d_%H-%M-%S")
-    return f"downloads/Marketing_Preferences_{date}.csv"
+    return f"{folder}/{data_type}_{date}.csv"
 
 
 def upload_blob(file: StringIO, filename: str) -> None:
@@ -144,11 +90,41 @@ def send_email_via_mailgun() -> None:
         log.exception("Mailgun Request Failed")
 
 
-def run() -> None:
+def send_marketing_info() -> None:
     """Entrypoint for Screamsheet."""
     marketing_data = get_marketing_data()
-    file = prepare_csv(marketing_data)
+    file = prepare_csv(
+        marketing_data,
+        headers=[
+            "Email",
+            "First Name",
+            "Last Name",
+            "Date of Birth",
+            "Key Name",
+            "Value",
+            "Account Number",
+            "Updated At",
+        ],
+    )
     file.seek(0)
-    filename = generate_filename()
+    filename = generate_filename("Marketing_Preferences", "downloads")
     upload_blob(file=file, filename=filename)
     send_email_via_mailgun()
+
+
+def send_transcation_info() -> None:
+    """Get transaction data from the Harmonia Database."""
+    transcation_data = get_transaction_data()
+    file = prepare_csv(
+        transcation_data,
+        headers=[
+            "AMOUNT",
+            "TRANSACTION DATE",
+            "AUTH",
+            "MID",
+            "LAST FOUR",
+        ],
+    )
+    file.seek(0)
+    filename = generate_filename("Transactions/viator_weekly_transaction", "downloads")
+    upload_blob(file=file, filename=filename)
