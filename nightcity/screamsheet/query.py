@@ -1,7 +1,7 @@
 import pendulum
-from sqlalchemy import select
+from sqlalchemy import String, select
 from sqlalchemy.engine.row import Row
-from sqlalchemy.sql import func
+from sqlalchemy.sql import expression, func
 
 from nightcity.settings import log, settings
 
@@ -54,7 +54,7 @@ def get_transaction_data() -> list[Row]:
     conn = engine("harmonia").connect()
     data = conn.execute(
         select(
-            ExportTransaction.spend_amount,
+            expression.cast(func.round(ExportTransaction.spend_amount / 100, 2), String),
             func.date(ExportTransaction.transaction_date),
             ExportTransaction.auth_code,
             ExportTransaction.mid,
