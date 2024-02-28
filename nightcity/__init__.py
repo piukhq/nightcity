@@ -4,7 +4,7 @@ import typer
 
 from nightcity.brendan import run as brendan
 from nightcity.delamain import run as delamain
-from nightcity.screamsheet import get_marketing_data, get_transaction_data
+from nightcity.screamsheet import send_marketing_info, send_transcation_info
 
 cli = typer.Typer()
 
@@ -27,13 +27,13 @@ def cli_delamain() -> None:
 @screamsheet.command(name="marketing")
 def marketing() -> None:
     """Send Marketing Preference to Viator."""
-    get_marketing_data()
+    send_marketing_info()
 
 
 @screamsheet.command(name="transactions")
 def transactions() -> None:
     """Send Transactions to Viator."""
-    get_transaction_data()
+    send_transcation_info()
 
 
 if __name__ == "__main__":
