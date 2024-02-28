@@ -60,7 +60,7 @@ def get_transaction_data() -> list[Row]:
             ExportTransaction.mid,
             ExportTransaction.last_four,
         )
-        .where(ExportTransaction.transaction_date > pendulum.now().subtract(days=7))
+        .where(ExportTransaction.transaction_date > pendulum.now().subtract(days=8))
         .where(ExportTransaction.provider_slug == "bpl-viator")
     ).fetchall()
     log.info(f"Retrieved {len(data)} rows from the database")
