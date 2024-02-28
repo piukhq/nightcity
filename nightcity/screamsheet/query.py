@@ -10,9 +10,8 @@ if settings.postgres_host and settings.environment in ("prod", "staging"):
         AccountHolder,
         AccountHolderMarketingPreference,
         AccountHolderProfile,
+        ExportTransaction,
         RetailerConfig,
-        Transaction,
-        UserIdentity,
         engine,
     )
 
@@ -55,15 +54,14 @@ def get_transaction_data() -> list[Row]:
     conn = engine("harmonia").connect()
     data = conn.execute(
         select(
-            Transaction.spend_amount,
-            func.date(Transaction.transaction_date),
-            Transaction.auth_code,
-            Transaction.mids[1],
-            UserIdentity.last_four,
+            ExportTransaction.spend_amount,
+            func.date(ExportTransaction.transaction_date),
+            ExportTransaction.auth_code,
+            ExportTransaction.mid,
+            ExportTransaction.last_four,
         )
-        .join(UserIdentity, UserIdentity.transaction_id == Transaction.transaction_id)
-        .where(Transaction.transaction_date > pendulum.now().subtract(days=7))
-        .where(Transaction.merchant_slug == "bpl-viator")
+        .where(ExportTransaction.transaction_date > pendulum.now().subtract(days=7))
+        .where(ExportTransaction.provider_slug == "bpl-viator")
     ).fetchall()
     log.info(f"Retrieved {len(data)} rows from the database")
     log.debug(data)

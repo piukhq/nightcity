@@ -41,13 +41,7 @@ class RetailerConfig(Base):
     __table__ = Table("retailer_config", metadata, autoload_with=engine("polaris"))
 
 
-class Transaction(Base):
-    """Transaction model."""
+class ExportTransaction(Base):
+    """Export Transaction model."""
 
-    __table__ = Table("transaction", metadata, autoload_with=engine("harmonia"))
-
-
-class UserIdentity(Base):
-    """User Identity model."""
-
-    __table__ = Table("user_identity", metadata, autoload_with=engine("harmonia"))
+    __table__ = Table("export_transaction", metadata, autoload_with=engine("harmonia"))
