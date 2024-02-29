@@ -54,17 +54,8 @@ def upload_blob(file: StringIO, filename: str) -> None:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(10))
-def send_email_via_mailgun() -> None:
+def send_email_via_mailgun(message: str, subject: str) -> None:
     """Send an email via Mailgun."""
-    message = """
-    Hi Viator Team,
-
-    Please note the monthly Viator Marketing preference file has been uploaded to the SFTP
-
-    Thanks
-    Bink Team
-    """
-
     mailgun_secret: Box = Box(json.loads(keyvault_client.get_secret("mailgun").value))
 
     if mailgun_secret.MAILGUN_API_KEY == "fake-api-key":
@@ -79,7 +70,7 @@ def send_email_via_mailgun() -> None:
             data={
                 "from": str(app_settings.mailgun_from),
                 "to": str(app_settings.mailgun_to),
-                "subject": "Viator Marketing Preferences",
+                "subject": subject,
                 "text": message,
             },
             timeout=10,
@@ -109,7 +100,17 @@ def send_marketing_info() -> None:
     file.seek(0)
     filename = generate_filename("Marketing_Preferences", "downloads")
     upload_blob(file=file, filename=filename)
-    send_email_via_mailgun()
+    subject = "Viator Marketing Preferences"
+    message = """
+    Hi Viator Team,
+
+    Please note the monthly Viator Marketing preference file has been uploaded to the SFTP
+
+    Thanks
+    Bink Team
+    """
+
+    send_email_via_mailgun(message=message, subject=subject)
 
 
 def send_transcation_info() -> None:
@@ -128,3 +129,13 @@ def send_transcation_info() -> None:
     file.seek(0)
     filename = generate_filename("Transactions/viator_weekly_transaction", "downloads")
     upload_blob(file=file, filename=filename)
+    subject = "Viator Discounts Weekly Transactions"
+    message = """
+    Hi Viator team,
+
+    Please see the this weeks Viator transactions file on the SFTP in the Transactions folder.
+
+    Kind Regards
+    Bink
+    """
+    send_email_via_mailgun(message=message, subject=subject)
