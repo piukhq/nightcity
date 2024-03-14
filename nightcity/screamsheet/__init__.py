@@ -111,6 +111,8 @@ def send_marketing_info() -> None:
     """
 
     send_email_via_mailgun(message=message, subject=subject)
+    url = "https://ping.checklyhq.com/17445d79-4bf3-4956-bbe4-86a3c06c940b"
+    requests.get(url, timeout=5)
 
 
 def send_transcation_info() -> None:
@@ -139,3 +141,5 @@ def send_transcation_info() -> None:
     Bink
     """
     send_email_via_mailgun(message=message, subject=subject)
+    url = "https://ping.checklyhq.com/b47dc444-826b-4852-8c19-5a885620f730"
+    requests.get(url, timeout=5)
