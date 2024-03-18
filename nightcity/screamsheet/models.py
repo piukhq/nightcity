@@ -1,3 +1,5 @@
+"""Screamsheet Models."""
+
 from sqlalchemy import Table
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import DeclarativeBase

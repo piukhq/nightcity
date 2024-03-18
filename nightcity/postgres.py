@@ -3,7 +3,8 @@ from psycopg2.extensions import connection
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 
-from nightcity.settings import identity, settings
+from nightcity.azure import identity
+from nightcity.settings import settings
 
 token: str = identity.get_token("https://ossrdbms-aad.database.windows.net/.default").token
 

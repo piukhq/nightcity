@@ -1,8 +1,6 @@
 import sys
 
 import sentry_sdk
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
 from loguru import logger as log
 from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings
@@ -30,9 +28,6 @@ settings = Settings()
 
 log.remove()
 log.add(sys.stdout, level=settings.log_level)
-
-identity = DefaultAzureCredential()
-keyvault_client = SecretClient(vault_url=str(settings.keyvault_url), credential=identity)
 
 sentry_sdk.init(
     dsn="https://01f20b69b17dfb7a44f8f0282f1970bb@o503751.ingest.sentry.io/4506688692617216",

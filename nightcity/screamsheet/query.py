@@ -1,3 +1,5 @@
+"""Query the Polaris and Harmonia databases for marketing preferences and transaction data."""
+
 import pendulum
 from sqlalchemy import String, select
 from sqlalchemy.engine.row import Row
