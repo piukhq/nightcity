@@ -1,8 +1,14 @@
 """Main module for Night City."""
 
+from sys import platform
+
 import typer
 
 from nightcity import brendan, ozob, screamsheet
+
+if platform == "linux":
+    typer.core.rich = None
+
 
 cli = typer.Typer()
 cli.add_typer(brendan.app, name="brendan", help="PIM Functions.")
