@@ -57,7 +57,7 @@ def get_transaction_data() -> list[Row]:
     data = conn.execute(
         select(
             expression.cast(func.round(ExportTransaction.spend_amount / 100, 2), String),
-            func.date(ExportTransaction.transaction_date),
+            func.date_trunc("minute", ExportTransaction.transaction_date),
             ExportTransaction.auth_code,
             ExportTransaction.mid,
             ExportTransaction.last_four,
