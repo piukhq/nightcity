@@ -1,7 +1,8 @@
 import csv
 import json
-from io import StringIO
+from io import BytesIO, StringIO
 
+import openpyxl
 import pendulum
 import requests
 from box import Box
@@ -11,9 +12,9 @@ from requests.auth import HTTPBasicAuth
 from sqlalchemy.engine.row import Row
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from nightcity.azure import sftp_client
+from nightcity.azure import keyvault_client, sftp_client
 from nightcity.screamsheet.query import get_marketing_data, get_transaction_data
-from nightcity.settings import keyvault_client, log
+from nightcity.settings import log
 
 
 class ScreamsheetConfig(BaseSettings):
@@ -37,10 +38,24 @@ def prepare_csv(data: list[Row], headers: list[str]) -> StringIO:
     return f
 
 
-def generate_filename(data_type: str, folder: str) -> str:
+def prepare_xlsx(data: list[Row], headers: list[str]) -> StringIO:
+    """Write Marketing Preferences to a XLSX StringIO Object."""
+    f = BytesIO()
+    wb = openpyxl.Workbook()
+    sheet = wb.active
+    for colno, heading in enumerate(headers, 1):
+        sheet.cell(row=1, value=heading, column=colno)
+    for rowno, row in enumerate(data, 2):
+        for colno, value in enumerate(row, 1):
+            sheet.cell(row=rowno, column=colno, value=value)
+    wb.save(f)
+    return f
+
+
+def generate_filename(data_type: str, folder: str, ext: str | None = None) -> str:
     """Generate a Filename for Azure Storage."""
     date = pendulum.now(tz="utc").strftime("%Y-%m-%d_%H-%M-%S")
-    return f"{folder}/{data_type}_{date}.csv"
+    return f"{folder}/{data_type}_{date}.{ext}" if ext else f"{folder}/{data_type}_{date}.csv"
 
 
 def upload_blob(file: StringIO, filename: str) -> None:
@@ -118,7 +133,7 @@ def send_marketing_info() -> None:
 def send_transcation_info() -> None:
     """Get transaction data from the Harmonia Database."""
     transcation_data = get_transaction_data()
-    file = prepare_csv(
+    file = prepare_xlsx(
         transcation_data,
         headers=[
             "AMOUNT",
@@ -129,7 +144,7 @@ def send_transcation_info() -> None:
         ],
     )
     file.seek(0)
-    filename = generate_filename("Transactions/viator_weekly_transaction", "downloads")
+    filename = generate_filename("Transactions/viator_weekly_transaction", "downloads", "xlsx")
     upload_blob(file=file, filename=filename)
     subject = "Viator Discounts Weekly Transactions"
     message = """
