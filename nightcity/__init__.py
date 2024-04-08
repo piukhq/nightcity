@@ -4,7 +4,7 @@ from sys import platform
 
 import typer
 
-from nightcity import brendan, ozob, screamsheet
+from nightcity import brendan, ncart, ozob, screamsheet
 
 if platform == "linux":
     typer.core.rich = None
@@ -13,6 +13,7 @@ if platform == "linux":
 cli = typer.Typer()
 cli.add_typer(brendan.app, name="brendan", help="PIM Functions.")
 cli.add_typer(ozob.app, name="ozob", help="SFTP Functions.")
+cli.add_typer(ncart.app, name="ncart", help="Blob Storage Functions.")
 cli.add_typer(screamsheet.app, name="screamsheet", help="Viator Functions.")
 
 
