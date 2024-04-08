@@ -6,6 +6,7 @@ from io import BytesIO, StringIO, TextIOWrapper
 import paramiko
 
 from nightcity.azure import blob_client, keyvault_client
+from nightcity.settings import log
 
 
 def run(testing: bool = False) -> None:  # noqa: FBT001, FBT002
@@ -24,6 +25,7 @@ def run(testing: bool = False) -> None:  # noqa: FBT001, FBT002
     )
     sftp = ssh_client.open_sftp()
     for filename in sftp.listdir(sftp_file_path):
+        log.info(f"Processing {filename}.")
         settlement_client = blob_client.get_blob_client(
             container="harmonia-imports",
             blob=f"mastercard-settlement/{filename}",
