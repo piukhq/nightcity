@@ -952,6 +952,23 @@ http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
 
 [[package]]
+name = "httpx-ws"
+version = "0.6.0"
+description = "WebSockets support for HTTPX"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "httpx_ws-0.6.0-py3-none-any.whl", hash = "sha256:437cfca94519a4e6ae06eb5573192df6c0da85c22b1a19cc1ea0b02b05a51d25"},
+    {file = "httpx_ws-0.6.0.tar.gz", hash = "sha256:60218f531fb474a2143af38568f4b7d94ba356780973443365c8e2c87882bb8c"},
+]
+
+[package.dependencies]
+anyio = ">=4"
+httpcore = ">=1.0.4"
+httpx = ">=0.23.1"
+wsproto = "*"
+
+[[package]]
 name = "hyperframe"
 version = "6.0.1"
 description = "HTTP/2 framing layer for Python"
@@ -1019,21 +1036,21 @@ six = "*"
 
 [[package]]
 name = "kr8s"
-version = "0.13.6"
+version = "0.14.2"
 description = "A Kubernetes API library"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "kr8s-0.13.6-py3-none-any.whl", hash = "sha256:04832c0f38305c92eb495e3809109d341d93ac7dd5470f703235be02273e1474"},
-    {file = "kr8s-0.13.6.tar.gz", hash = "sha256:b863fb5f9deed63fe50a6fc7eaab5f8fcb28ce3fbb0cd4d4dd3c87bc3dfc54b1"},
+    {file = "kr8s-0.14.2-py3-none-any.whl", hash = "sha256:d23478cc8e8fae3f968f2af72f6e702c13671118aa276df1a88be676c7c93177"},
+    {file = "kr8s-0.14.2.tar.gz", hash = "sha256:ac9d3b45d6dd25872d752cb2463a2b9e8990bd92c44b1dd8dc3038103160e088"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.8.4"
 anyio = ">=3.7.0"
 asyncache = ">=0.3.1"
 cryptography = ">=35"
 httpx = ">=0.24.1"
+httpx-ws = ">=0.5.1"
 python-box = ">=7.0.1"
 python-jsonpath = ">=0.7.1"
 pyyaml = ">=6.0"
@@ -2517,6 +2534,20 @@ files = [
 ]
 
 [[package]]
+name = "wsproto"
+version = "1.2.0"
+description = "WebSockets state-machine based protocol implementation"
+optional = false
+python-versions = ">=3.7.0"
+files = [
+    {file = "wsproto-1.2.0-py3-none-any.whl", hash = "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736"},
+    {file = "wsproto-1.2.0.tar.gz", hash = "sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065"},
+]
+
+[package.dependencies]
+h11 = ">=0.9.0,<1"
+
+[[package]]
 name = "yarl"
 version = "1.9.4"
 description = "Yet another URL library"
@@ -2637,4 +2668,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "12319f4e1b62ce072408d1c3720ea3e2be2ea65cde573cd30805ae56ec1b6470"
+content-hash = "321d4faf3a3b10725a7ebd0c4a3597d408e4ebac96683282a12edb07a5bf7f11"
