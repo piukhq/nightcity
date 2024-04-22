@@ -10,7 +10,7 @@ nightcity = "nightcity:cli"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-typer = { extras = ["all"], version = "^0.9.0" }
+typer = { extras = ["all"], version = "^0.12.0" }
 pydantic-settings = "^2.1.0"
 requests = "^2.31.0"
 loguru = "^0.7.2"
