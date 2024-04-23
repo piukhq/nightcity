@@ -6,6 +6,7 @@ from io import BytesIO, StringIO, TextIOWrapper
 import paramiko
 
 from nightcity.azure import blob_client, keyvault_client
+from nightcity.prometheus import sftp_connect
 from nightcity.settings import log
 
 
@@ -24,6 +25,18 @@ def run(testing: bool = False) -> None:  # noqa: FBT001, FBT002
         disabled_algorithms={"pubkeys": ["rsa-sha2-256", "rsa-sha2-512"]},
     )
     sftp = ssh_client.open_sftp()
+    try:
+        sftp.listdir()
+    except OSError as e:
+        sftp_connect.labels(
+            status="failure",
+            reason=e,
+        ).set(1)
+    else:
+        sftp_connect.labels(
+            status="success",
+            reason="",
+        ).set(0)
     for filename in sftp.listdir(sftp_file_path):
         log.info(f"Processing {filename}.")
         settlement_client = blob_client.get_blob_client(
