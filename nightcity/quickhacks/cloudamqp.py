@@ -1,25 +1,20 @@
 """Simple HTTP Proxy for CloudAMQP Prometheus Metrics."""
 
+from pathlib import Path
 from typing import Annotated
 
 import requests
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import Response
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from nightcity.azure import keyvault_client
 
-class Settings(BaseSettings):
-    """Settings for CloudAMQP Proxy."""
-
-    hostname: str
-    username: str
-    password: str
-
-    model_config = SettingsConfigDict(env_prefix="CLOUDAMQP_")
-
+username = keyvault_client.get_secret("infra-cloudamqp-username").value
+password = keyvault_client.get_secret("infra-cloudamqp-password").value
+statefulset_replica = int(Path("/etc/hostname").read_text().strip().split("-")[-1])
+hostname = keyvault_client.get_secret(f"infra-cloudamqp-node-0{statefulset_replica + 1}").value
 
 app = FastAPI()
-settings = Settings()
 
 
 @app.get("/livez")
@@ -31,9 +26,7 @@ def livez() -> Response:
 @app.get("/readyz")
 def readyz() -> Response:
     """Readiness Check Endpoint."""
-    response = requests.get(
-        f"https://{settings.hostname}/metrics", auth=(settings.username, settings.password), timeout=5
-    )
+    response = requests.get(f"https://{hostname}/metrics", auth=(username, password), timeout=5)
     response.raise_for_status()
     return Response(content="OK", media_type="text/plain", status_code=200)
 
@@ -43,9 +36,9 @@ def readyz() -> Response:
 def metrics(request: Request, family: Annotated[list[str] | None, Query()] = None) -> Response:
     """Fetch CloudAMQP Prometheus Metrics and return them."""
     response = requests.get(
-        f"https://{settings.hostname}/{request.url.path}",
+        f"https://{hostname}/{request.url.path}",
         params={"family": family} if family else None,
-        auth=(settings.username, settings.password),
+        auth=(username, password),
         timeout=5,
     )
     return Response(content=response.text, media_type="text/plain", status_code=response.status_code)
