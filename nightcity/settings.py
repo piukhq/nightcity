@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     blob_storage_account_name: str | None = None
     sftp_storage_account_name: str | None = None
 
+    prometheus_push_gateway: str | None = None
+
     log_level: str = "INFO"
 
 

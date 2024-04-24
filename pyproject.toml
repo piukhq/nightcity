@@ -30,6 +30,7 @@ sentry-sdk = "^1.40.0"
 paramiko = "^3.4.0"
 openpyxl = "^3.1.2"
 azure-storage-file-share = "^12.15.0"
+prometheus-client = "^0.20.0"
 fastapi = "^0.110.2"
 uvicorn = "^0.29.0"
 
