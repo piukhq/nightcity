@@ -1036,13 +1036,13 @@ six = "*"
 
 [[package]]
 name = "kr8s"
-version = "0.14.2"
+version = "0.14.4"
 description = "A Kubernetes API library"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "kr8s-0.14.2-py3-none-any.whl", hash = "sha256:d23478cc8e8fae3f968f2af72f6e702c13671118aa276df1a88be676c7c93177"},
-    {file = "kr8s-0.14.2.tar.gz", hash = "sha256:ac9d3b45d6dd25872d752cb2463a2b9e8990bd92c44b1dd8dc3038103160e088"},
+    {file = "kr8s-0.14.4-py3-none-any.whl", hash = "sha256:440d31a00da1ed5e59b3e9812eb7404022400417ab4aa575abf1c8d3a6fbab53"},
+    {file = "kr8s-0.14.4.tar.gz", hash = "sha256:d96fc937a14116511234c797ba92459bc691f7295acfc01ff84763e3f3aea094"},
 ]
 
 [package.dependencies]
