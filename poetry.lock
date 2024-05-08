@@ -296,23 +296,23 @@ aio = ["azure-core[aio] (>=1.28.0,<2.0.0)"]
 
 [[package]]
 name = "azure-storage-file-share"
-version = "12.15.0"
+version = "12.16.0"
 description = "Microsoft Azure Azure File Share Storage Client Library for Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "azure-storage-file-share-12.15.0.tar.gz", hash = "sha256:0098f1cfa9344c4f781ce0cd504ff3a35255751553c01e720dccd0caa8d8aa2a"},
-    {file = "azure_storage_file_share-12.15.0-py3-none-any.whl", hash = "sha256:69cb8ec09f15dc5259126ceebff59a6dec4a5f23c37bfac4488dce4711385e60"},
+    {file = "azure-storage-file-share-12.16.0.tar.gz", hash = "sha256:412fb7e6c3c28f6f722af98195aa59407aaa32323afa13a4a01f62d0b8774eb3"},
+    {file = "azure_storage_file_share-12.16.0-py3-none-any.whl", hash = "sha256:de7bbe7281dafb7b591166ee4bd81887d8553ac5396d80926503a5fa1c08ddf1"},
 ]
 
 [package.dependencies]
-azure-core = ">=1.28.0,<2.0.0"
+azure-core = ">=1.28.0"
 cryptography = ">=2.1.4"
 isodate = ">=0.6.1"
-typing-extensions = ">=4.3.0"
+typing-extensions = ">=4.6.0"
 
 [package.extras]
-aio = ["azure-core[aio] (>=1.28.0,<2.0.0)"]
+aio = ["azure-core[aio] (>=1.28.0)"]
 
 [[package]]
 name = "bcrypt"
